@@ -1,14 +1,18 @@
-version: '3.3'
+version: '3.8'
 services:
-  web: &web
+  tabula-ui:
     build:
       context: .
-    command: "jruby -G -r jbundler -S rackup -p 9292 -o 0.0.0.0 config.ru"
-    volumes:
-      - .:/app
-      - bundle:/usr/local/bundle
     ports:
-      - 9292:9292
+      - "8080:8080"
+    environment:
+      JAVA_OPTS: "-Dfile.encoding=utf-8 -Xms256M -Xmx1024M"
+      # Override workspace directory (default: OS application data dir)
+      # tabula.workspace.directory: /data
+    volumes:
+      # Persist uploaded PDFs and workspace data across container restarts
+      - tabula-ui_data:/root/.tabula
+    restart: unless-stopped
 
 volumes:
-  bundle:
+  tabula-ui_data:

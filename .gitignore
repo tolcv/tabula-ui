@@ -1,34 +1,51 @@
-static/pdfs
-local_settings.rb
-tabula.war
-.sass-cache
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.zip
+*.tar.gz
+*.rar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
 
-lib/jars/javacv*
-.ruby-gemset
-
-TEST_PDFS
-.DS_Store
-build/Tabula.app
-build/tabula.jar
-build/tabula-*.zip
-build/mac
-build/windows
-build/tabula
-launch4j/
-
-# Based on https://github.com/github/gitignore/blob/master/Ruby.gitignore
-*.gem
-*.rbc
+# IDE / Editor
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
 *.swp
-.bundle
-.config
-.DS_store
-coverage
-InstalledFiles
-lib/bundler/man
-pkg
-rdoc
-spec/reports
-test/tmp
-test/version_tmp
-tmp
+*.swo
+*~
+.classpath
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS / System
+.DS_Store
+Thumbs.db
+.env.local
+
+# Build artifacts
+build/
+dist/
+
+# Development / Testing
+TEST_PDFS
+*.log
+
+# Project-specific
+static/pdfs
+.sass-cache
+workspace.json

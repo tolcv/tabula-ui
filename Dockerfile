@@ -1,23 +1,33 @@
-FROM jruby:9.2-jdk
+FROM eclipse-temurin:17-jdk AS build
 
-RUN apt-get update -qq && apt-get install -y build-essential git \
+RUN apt-get update -qq && apt-get install -y --no-install-recommends maven \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN echo 'gem: --no-rdoc --no-ri' >> /.gemrc
 
-ENV GEM_HOME /usr/local/bundle
-ENV PATH $GEM_HOME/bin:$PATH
-RUN gem install bundler -v '< 2' \
-  && bundle config --global path "$GEM_HOME" \
-  && bundle config --global bin "$GEM_HOME/bin"
+WORKDIR /build
+COPY pom.xml .
+# Download dependencies first (improves layer caching)
+RUN mvn -q dependency:go-offline -DskipTests
 
-# don't create ".bundle" in all our apps
-ENV BUNDLE_APP_CONFIG $GEM_HOME
+COPY src ./src
+RUN mvn -q -DskipTests package
+
+# ---- runtime image ----
+FROM eclipse-temurin:17-jre
+
+# Install Tesseract for OCR support (optional - remove if not needed)
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-EXPOSE 9292
-CMD ["jruby", "-G", "-r", "jbundler", "-S", "rackup", "-o", "0.0.0.0", "config.ru"]
+COPY --from=build /build/target/tabula-ui-1.3.0.jar app.jar
 
-# these didn't work as ONBUILD, strangely. Idk why. -JBM
-COPY Gemfile Gemfile.lock Jarfile Jarfile.lock ./
-RUN bundle install && jruby -S jbundle install
-COPY . .
+EXPOSE 8080
+
+ENV JAVA_OPTS="-Dfile.encoding=utf-8 -Xms256M -Xmx1024M"
+ENV TABULA_DATA_DIR=""
+ENV tabula_ocr_tessdata_path="/usr/share/tesseract-ocr/5/tessdata"
+ENV tabula_ocr_native_library_path=""
+
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
